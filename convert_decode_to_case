@@ -39,7 +39,7 @@ end
 
 class SearchType
 
-  SEARCHTYPES = [ :default , :string , :comment , :parenthesis , :newline ]
+  SEARCHTYPES = [ :default , :string , :comment , :parentheses , :newline ]
 
   def initialize()
     @searchstack = []
@@ -161,8 +161,8 @@ class DecodeParser
 
           if curbuf.downcase == "decode"
             decode_found = true            
-            decode_parenthesis = parenthises_match()
-            tokens = tokenize(decode_parenthesis)
+            decode_parentheses = parentheses_match()
+            tokens = tokenize(decode_parentheses)
             case_stmt = tokens_to_case(tokens)
             outbuf << case_stmt
             curbuf = ""
@@ -242,16 +242,16 @@ class DecodeParser
 
   end
 
-  def parenthises_match()
+  def parentheses_match()
 
     curpos = 0
-    parenthesis_found = false
-    parenthesis_startpos = 0
+    parentheses_found = false
+    parentheses_startpos = 0
 
     curbuf = ""
     outbuf = ""
     comment_count = 0
-    parenthesis_count = 0
+    parentheses_count = 0
 
     searchtype = SearchType.new
 
@@ -262,7 +262,7 @@ class DecodeParser
     while !@strio.eof?
       curbuf << @strio.getc
       
-      if parenthesis_found
+      if parentheses_found
         outbuf << curbuf[curpos]
       end
       
@@ -276,11 +276,11 @@ class DecodeParser
         elsif comment_line?(curbuf,curpos)
           searchtype.add :newline
         elsif lparen?(curbuf,curpos)
-          parenthesis_count += 1
-          parenthesis_found = true 
+          parentheses_count += 1
+          parentheses_found = true 
         elsif rparen?(curbuf,curpos)
-          parenthesis_count -= 1
-          if parenthesis_count == 0 && parenthesis_found
+          parentheses_count -= 1
+          if parentheses_count == 0 && parentheses_found
             #Return look-ahead char to @strio since it hasn't consumed by this method
             @strio.ungetc curbuf[-1]
             #Last char would be matching parenthises, remove from outbuf before returning
@@ -327,7 +327,7 @@ class DecodeParser
       curpos += 1
     end
 
-    raise ParseError, "Unable to find end parenthesis at line number #{@lineno}"
+    raise ParseError, "Unable to find end parentheses at line number #{@lineno}"
 
   end
 
@@ -338,7 +338,7 @@ class DecodeParser
 
     searchtype = SearchType.new
 
-    parenthesis_count = 0
+    parentheses_count = 0
     comment_count = 0
 
     begin
@@ -356,15 +356,15 @@ class DecodeParser
         elsif string_start?(str,curpos)
           searchtype.add :string
         elsif lparen?(str,curpos)
-          parenthesis_count = 1
-          searchtype.add :parenthesis
+          parentheses_count = 1
+          searchtype.add :parentheses
         end
-      when :parenthesis
+      when :parentheses
         if lparen?(str,curpos)
-          parenthesis_count += 1
+          parentheses_count += 1
         elsif rparen?(str,curpos)
-          parenthesis_count -= 1
-          if parenthesis_count == 0
+          parentheses_count -= 1
+          if parentheses_count == 0
             searchtype.remove
           end
         elsif string_start?(str,curpos)
