@@ -71,7 +71,7 @@ class DecodeParser
   def initialize(str)
     @strio = StringIO.new str
     if @strio.length < 6
-      raise ParseError, "Unable to parse, not enough input (#{str.length characters})"
+      raise ParseError, "Unable to parse, not enough input, length = (#{str.length characters})"
     end
 
     @parsed = false
@@ -87,7 +87,7 @@ class DecodeParser
   def initialize_from_file(path)
     @strio = StringIO.new File.open(path).read
     if @strio.length < 6
-      raise ParseError, "Unable to parse, not enough input (#{str.length characters})"
+      raise ParseError, "Unable to parse, not enough input , filesize = (#{str.length characters})"
     end
     @parsed = false
     @lineno = 1
@@ -108,15 +108,12 @@ class DecodeParser
     if !@strio.eof?
       c = @strio.getc
       if curbuf.length < 6
-        #puts "6 or less , adding #{c} to curbuf"
         curbuf << c
         return curbuf,outbuf
       else
-        #puts "6 or more, adding #{curbuf[0]} to outbuf , adding #{c} to curbuf"
         outbuf << curbuf[0]
         nbuf = curbuf[1..-1]
         curbuf = nbuf << c
-        #puts "curbuf is #{curbuf}"
         return curbuf,outbuf
       end
     elsif curbuf.length > 1
@@ -125,7 +122,7 @@ class DecodeParser
       curbuf = nbuf
       return curbuf,outbuf
     else 
-      raise ParseError, "Why are you calling me?"
+      raise ParseError, "Why are you calling me now - your really shouldn't , we are at eof-of-input!?!"
       return 
     end
   end
@@ -154,13 +151,11 @@ class DecodeParser
 
         curbuf,outbuf = readc(curbuf,outbuf)
         @lineno += 1 if curbuf[0] == "\n"
-
         case searchtype.current
 
         when :default
 
           if curbuf.downcase == "decode"
-            #puts "ÖLKJÖLKJÖLKJÖLkj"
             decode_found = true            
             begin
               c = @strio.getc
@@ -172,7 +167,6 @@ class DecodeParser
             tokens = tokenize(decode_parenthesis)
             case_stmt = tokens_to_case(tokens)
             outbuf << case_stmt
-            #puts "outbuf = #{outbuf.string}"
             curbuf = ""
             while (curbuf.length < 6) && !@strio.eof?
               curbuf << @strio.getc
@@ -212,6 +206,7 @@ class DecodeParser
             curbuf,outbuf = readc(curbuf,outbuf)
             while !@strio.eof? && string_start?(curbuf) 
               in_str = !in_str
+              curbuf,outbuf = readc(curbuf,outbuf)
             end
             if !in_str
               searchtype.remove
@@ -282,9 +277,10 @@ class DecodeParser
         elsif rparen?(outstr,curpos)
           parenthesis_count -= 1
           if parenthesis_count == 0
-            #nuke the last parenthesis with chop!
+            #Return look-ahead char to @strio and remove from outstr since it hasn't been use by this method
             @strio.ungetc outstr[-1]
             outstr.chop!
+            #and nuke the last parenthesis in outstr with chop! , it will not be used by anyone
             outstr.chop!
             return outstr
           end
@@ -313,10 +309,10 @@ class DecodeParser
 
         if string_start?(outstr,curpos)
           in_str = false
-          while string_start?(outstr,curpos+1)
+          while string_start?(outstr,curpos+1) && !@strio.eof?
             in_str = !in_str
             curpos += 1
-            outstr << s.getc
+            outstr << @strio.getc
           end
           if !in_str
             searchtype.remove
@@ -345,7 +341,7 @@ class DecodeParser
       case searchtype.current
 
       when :default
-        if str[curpos] == ',' # Tokenavgränsare
+        if str[curpos] == ',' # Token delimiter
           tokens << str[token_startpos..curpos-1]
           token_startpos = curpos+1
         elsif comment_line?(str,curpos)
@@ -486,16 +482,7 @@ elsif Dir.exists?(options[:input]) && ( options[:output].nil? || !Dir.exists?(op
 	exit(1)
 end
 
-if !d.is_a? Array
-  if options[:output].nil? || options[:output] == "-"
-    puts d.to_case
-  elsif File.exists?(options[:output]) && options[:force].nil?
-    puts "Output file aldready exists, use -f to overwrite"
-    exit(1)
-  else
-    File.open(options[:output],"w").write d.to_case
-  end
-else
+if d.is_a? Array
   procs = []
   d.each do |asdf| 
     if options[:jobs].nil? 
@@ -506,6 +493,15 @@ else
   end
   if !options[:jobs].nil? 
     procs.each { |p| Process.waitpid p }
+  end
+else
+  if options[:output].nil? || options[:output] == "-"
+    puts d.to_case
+  elsif File.exists?(options[:output]) && options[:force].nil?
+    puts "Output file aldready exists, use -f to overwrite"
+    exit(1)
+  else
+    File.open(options[:output],"w").write d.to_case
   end
 end
 
