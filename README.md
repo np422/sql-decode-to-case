@@ -24,54 +24,74 @@ If run without any options it will read sql from STDIN and write converted sql t
 ### Example
 
 testcase.sql have been used to test that decodes get converted in a reliable manner.
+```shell
+$ cat testcase.sql 
 
-`**$ cat testcase.sql**`
-`    `
-`    SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;`
-`    `
-`    SELECT`
-`      -- THIS DECODE( statement should not be included`
-`    DECODE( 1 , 1 , 'But this one should' )`
-`    FROM DUAL;`
-`    `
-`    /* And here are a comment`
-`    `
-`       /* `
-`          and a nested comment , lets try some DECODE( `
-`       */ `
-`    `
-`    */`
-`    `
-`    SELECT DECODE( DECODE( 1 , 1 , 'y0 DaWg , I heard you like decodes') , `
-`     -- Comment/newlines shoule be ignored`
-`     '' , 'foo' , ' - so I put a decode in your decode)' ) FROM DUAL;`
-`    `
-`    SELECT DECODE( NVL(a,1) , 1 , 'foo', 2 , NVL(b,'bar') ) FROM DUAL;`
-`    `
-`    /* Trailing comment */`
-`    `
-`    **$ ./convert_decode_to_case -i testcase.sql**`
-`    `
-`    SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;`
-`    `
-`    SELECT`
-`      -- THIS DECODE( statement should not be included`
-`     CASE  1  WHEN  1  THEN  'But this one should'  END` 
-`    FROM DUAL;`
-`    `
-`    /* And here are a comment`
-`    `
-`       /* `
-`          and a nested comment , lets try some DECODE( `
-`       */ `
-`    `
-`    */`
-`    `
-`    SELECT  CASE   CASE  1  WHEN  1  THEN  'y0 DaWg , I heard you like decodes' END   WHEN  `
-`     -- Comment/newlines shoule be ignored`
-`     ''  THEN  'foo'  ELSE  ' - so I put a decode in your decode)'  END  FROM DUAL;`
-`    `
-`    SELECT  CASE  NVL(a,1)  WHEN  1  THEN  'foo' WHEN  2  THEN  NVL(b,'bar')  END  FROM DUAL;`
-`    `
-`    /* Trailing comment */`
+SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;
 
+select decode /*(*/ (1 , 1 , 'what') from dual;
+
+SELECT
+  -- THIS DECODE( statement should not be included
+DECODE( 1 , 1 , 'But this one should' )
+FROM DUAL;
+
+/* 
+
+   /* 
+      and a nested comment , lets try some DECODE( 
+   */ 
+  And another decode( 'with unbalanced parenthesis' , 'inside a comment' , 'should not be converted'
+*/
+
+SELECT 
+DECODE( 
+
+       DECODE( 1 , 1 , '( phony retval' ) , 
+
+ -- Comment/newlines shoule be ignored
+
+       '' , '' , 'y0 dAwG - I heard you liked decoeds - so I put a decode in your decode' 
+       ) 
+FROM DUAL;
+
+SELECT DECODE( NVL(1,1) , 1 , 'foo', 2 , NVL('','bar') ) FROM DUAL;
+
+/* Trailing comment */
+
+$ ./convert_decode_to_case -i testcase.sql 
+
+SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;
+
+select  CASE 1  WHEN  1  THEN  'what' END  from dual;
+
+SELECT
+  -- THIS DECODE( statement should not be included
+ CASE  1  WHEN  1  THEN  'But this one should'  END 
+FROM DUAL;
+
+/* 
+
+   /* 
+      and a nested comment , lets try some DECODE( 
+   */ 
+  And another decode( 'with unbalanced parenthesis' , 'inside a comment' , 'should not be converted'
+*/
+
+SELECT 
+ CASE  
+
+        CASE  1  WHEN  1  THEN  '( phony retval'  END   WHEN  
+
+ -- Comment/newlines shoule be ignored
+
+       ''  THEN  ''  ELSE  'y0 dAwG - I heard you liked decoeds - so I put a decode in your decode' 
+        END  
+FROM DUAL;
+
+SELECT  CASE  NVL(1,1)  WHEN  1  THEN  'foo' WHEN  2  THEN  NVL('','bar')  END  FROM DUAL;
+
+/* Trailing comment */
+
+$ 
+```
