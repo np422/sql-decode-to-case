@@ -24,8 +24,8 @@ If run without any options it will read sql from STDIN and write converted sql t
 ### Example
 
 testcase.sql have been used to test that decodes get converted in a reliable manner.
-```shell
-$ cat testcase.sql 
+<pre>
+$ <b>cat testcase.sql</b> 
 
 SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;
 
@@ -59,7 +59,7 @@ SELECT DECODE( NVL(1,1) , 1 , 'foo', 2 , NVL('','bar') ) FROM DUAL;
 
 /* Trailing comment */
 
-$ ./convert_decode_to_case -i testcase.sql 
+$ <b>./convert_decode_to_case -i testcase.sql </b>
 
 SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;
 
@@ -92,13 +92,5 @@ FROM DUAL;
 SELECT  CASE  NVL(1,1)  WHEN  1  THEN  'foo' WHEN  2  THEN  NVL('','bar')  END  FROM DUAL;
 
 /* Trailing comment */
-
-$ 
-```
-<pre>
-
-asdf {
-  <b>foo = a;</b>
-}
 
 </pre>
