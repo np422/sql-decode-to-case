@@ -64,6 +64,10 @@ class SearchType
     @searchstack.pop
   end
 
+  def to_s
+    current.to_s
+  end
+
 end
 
 class DecodeParser
@@ -157,12 +161,6 @@ class DecodeParser
 
           if curbuf.downcase == "decode"
             decode_found = true            
-            begin
-              c = @strio.getc
-            end while c != '(' && !@strio.eof?
-            if @strio.eof?
-              raise ParseError, "DUH!"
-            end
             decode_parenthesis = parenthises_match()
             tokens = tokenize(decode_parenthesis)
             case_stmt = tokens_to_case(tokens)
@@ -247,58 +245,63 @@ class DecodeParser
   def parenthises_match()
 
     curpos = 0
+    parenthesis_found = false
+    parenthesis_startpos = 0
 
-    outstr = ""
-
+    curbuf = ""
+    outbuf = ""
     comment_count = 0
-    parenthesis_count = 1
+    parenthesis_count = 0
 
     searchtype = SearchType.new
 
-    #Keep one more character in outstr for look-ahead 
+    #Keep one more character in curbuf for look-ahead 
 
-    outstr << @strio.getc
+    curbuf << @strio.getc
 
     while !@strio.eof?
+      curbuf << @strio.getc
       
-      outstr << @strio.getc
+      if parenthesis_found
+        outbuf << curbuf[curpos]
+      end
       
       case searchtype.current
 
       when :default
 
-        if comment_start?(outstr,curpos)
+        if comment_start?(curbuf,curpos)
           comment_count = 1
           searchtype.add :comment
-        elsif comment_line?(outstr,curpos)
+        elsif comment_line?(curbuf,curpos)
           searchtype.add :newline
-        elsif lparen?(outstr,curpos)
+        elsif lparen?(curbuf,curpos)
           parenthesis_count += 1
-        elsif rparen?(outstr,curpos)
+          parenthesis_found = true 
+        elsif rparen?(curbuf,curpos)
           parenthesis_count -= 1
-          if parenthesis_count == 0
-            #Return look-ahead char to @strio and remove from outstr since it hasn't been use by this method
-            @strio.ungetc outstr[-1]
-            outstr.chop!
-            #and nuke the last parenthesis in outstr with chop! , it will not be used by anyone
-            outstr.chop!
-            return outstr
+          if parenthesis_count == 0 && parenthesis_found
+            #Return look-ahead char to @strio since it hasn't consumed by this method
+            @strio.ungetc curbuf[-1]
+            #Last char would be matching parenthises, remove from outbuf before returning
+            outbuf.chop!
+            return outbuf
           end
-        elsif string_start?(outstr,curpos)
+        elsif string_start?(curbuf,curpos)
           searchtype.add :string
         end
 
       when :newline
 
-        if outstr[curpos] == "\n"
+        if curbuf[curpos] == "\n"
           searchtype.remove
         end
 
       when :comment
 
-        if comment_start?(outstr,curpos)
+        if comment_start?(curbuf,curpos)
           comment_count += 1
-        elsif comment_end?(outstr,curpos)
+        elsif comment_end?(curbuf,curpos)
           comment_count -= 1
           if comment_count == 0
             searchtype.remove
@@ -307,12 +310,13 @@ class DecodeParser
 
       when :string
 
-        if string_start?(outstr,curpos)
+        if string_start?(curbuf,curpos)
           in_str = false
-          while string_start?(outstr,curpos+1) && !@strio.eof?
+          while string_start?(curbuf,curpos+1) && !@strio.eof?
             in_str = !in_str
             curpos += 1
-            outstr << @strio.getc
+            curbuf << @strio.getc
+            outbuf << curbuf[curpos]
           end
           if !in_str
             searchtype.remove
@@ -445,7 +449,7 @@ rescue OptionParser::InvalidOption => e
   exit(1)
 end
 
-if options.keys.count == 0 or options[:help]
+if options[:help]
   puts opts
   exit(0)
 end
