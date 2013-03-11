@@ -22,7 +22,7 @@ This is not thoroughly tested, but worked for me.
 
 testcase.sql have been used to test that decodes get converted in a reliable manner.
 
-    $ **cat testcase.sql**
+    $ cat testcase.sql
     
     SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;
     
@@ -47,7 +47,7 @@ testcase.sql have been used to test that decodes get converted in a reliable man
     
     /* Trailing comment */
     
-    $ **./convert_decode_to_case -i testcase.sql**
+    $ ./convert_decode_to_case -i testcase.sql
     
     SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;
     
