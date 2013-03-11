@@ -95,3 +95,10 @@ SELECT  CASE  NVL(1,1)  WHEN  1  THEN  'foo' WHEN  2  THEN  NVL('','bar')  END  
 
 $ 
 ```
+<pre>
+
+asdf {
+  <b>foo = a;</b>
+}
+
+</pre>
