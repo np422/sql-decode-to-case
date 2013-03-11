@@ -5,7 +5,7 @@ Convert oracle style deocde statements to "simple form" case statements
 
 Useful for migrating from oracle to postgres.
 
-Also if you use enterprisedb decode statement may work but case statements will give you better performance compared with decode. 
+If you use enterprisedb decode statement may work but case statements will give you better performance compared with decode. 
 
 This is not thoroughly tested, but worked for me.
 
