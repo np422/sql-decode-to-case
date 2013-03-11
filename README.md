@@ -23,4 +23,4 @@ This is not thoroughly tested, but worked for me.
     $ echo "SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;"  > /tmp/input.sql
     $  ./convert_decode_to_case  -i /tmp/input.sql -f -o /tmp/output.sql
     $ cat /tmp/output.sql 
-SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;
+    SELECT  CASE 1 /* , () ' hello () ' */  WHEN  1  THEN  'Return a string )'  ELSE  'else return something with ticks and a parenthesis '')''' END  FROM DUAL;
