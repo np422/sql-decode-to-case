@@ -24,7 +24,7 @@ If run without any options it will read sql from STDIN and write converted sql t
 ### Example
 
 testcase.sql have been used to test that decodes get converted in a reliable manner.
-``
+
 `**$ cat testcase.sql**`
 `    `
 `    SELECT DECODE(1 /* , () ' hello () ' */ , 1 , 'Return a string )' , 'else return something with ticks and a parenthesis '')''') FROM DUAL;`
@@ -74,4 +74,4 @@ testcase.sql have been used to test that decodes get converted in a reliable man
 `    SELECT  CASE  NVL(a,1)  WHEN  1  THEN  'foo' WHEN  2  THEN  NVL(b,'bar')  END  FROM DUAL;`
 `    `
 `    /* Trailing comment */`
-``
+
