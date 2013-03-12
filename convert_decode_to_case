@@ -126,7 +126,7 @@ class DecodeParser
       curbuf = nbuf
       return curbuf,outbuf
     else 
-      raise ParseError, "Why are you calling me now - your really shouldn't , we are at eof-of-input!?!"
+      raise ParseError, "Can't read past eof."
       return 
     end
   end
