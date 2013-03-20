@@ -7,7 +7,9 @@ Useful for migrating from oracle to postgres.
 
 If you use enterprisedb decode statement may work but case statements will give you better performance compared with decode. 
 
-This is not thoroughly tested, but worked for me.
+Thanks to <a href="http://enterprisedb.com/">Enterprisedb</a> support for the testcases.
+
+Decode statements whithin <a href="http://www.postgresql.org/docs/9.2/static/plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN">Dynamic Commands</a> is *not* handles by this script
 
 ### Usage
 
