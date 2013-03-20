@@ -29,5 +29,68 @@ FROM DUAL;
 
 SELECT DECODE( NVL(1,1) , 1 , 'foo', 2 , NVL('','bar') ) FROM DUAL;
 
-/* Trailing comment */
-
+SELECT
+    id AS "DECODE(",
+    decode ( decode ( status,
+            'A',
+            'A',
+            'B',
+            'B',
+            'other' )
+,
+        'A',
+        'Accepted',
+        'D',
+        'Denied',
+        'Other' ) AS ")"
+FROM
+    contracts;
+SELECT
+    id AS "decode(",
+    decode ( decode ( status,
+            'A',
+            'A',
+            'B',
+            'B',
+            'other' )
+,
+        'A',
+        'Accepted',
+        'D',
+        'Denied',
+        'Other' ) AS ")"
+FROM
+    contracts;
+SELECT
+    id AS "decode",
+    decode ( decode ( status,
+            'A',
+            'A',
+            'B',
+            'B',
+            'other' )
+,
+        'A',
+        'Accepted',
+        'D',
+        'Denied',
+        'Other' ) AS ")"
+FROM
+    contracts;
+SELECT
+    id AS /* asdf1 */ -- asdf2
+    decode,
+    decode ( decode ( status,
+            'A',
+            'A',
+            'B',
+            'B',
+            'other' )
+,
+        'A',
+        'Accepted',
+        'D',
+        'Denied',
+        'Other' ) AS change
+FROM
+    contracts;

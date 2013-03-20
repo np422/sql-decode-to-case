@@ -39,7 +39,7 @@ end
 
 class SearchType
 
-  SEARCHTYPES = [ :default , :string , :comment , :parentheses , :newline ]
+  SEARCHTYPES = [ :default , :string , :comment , :parentheses , :newline , :column_alias ]
 
   def initialize()
     @searchstack = []
@@ -177,6 +177,8 @@ class DecodeParser
               searchtype.add :comment
             elsif string_start?(curbuf)
               searchtype.add :string
+            elsif column_alias?(curbuf)
+              searchtype.add :column_alias
             end
           end
 
@@ -209,6 +211,16 @@ class DecodeParser
             if !in_str
               searchtype.remove
             end
+          end
+        
+
+        when :column_alias
+
+          if curbuf[0] == ','
+            searchtype.remove
+          elsif comment_start?(curbuf)
+            comment_count = 1
+            searchtype.add :comment
           end
         end
       end
@@ -269,7 +281,6 @@ class DecodeParser
       case searchtype.current
 
       when :default
-
         if comment_start?(curbuf,curpos)
           comment_count = 1
           searchtype.add :comment
@@ -412,7 +423,7 @@ class DecodeParser
   end
 
   def string_start?(str,pos=0)
-    str[pos] == "'"
+    str[pos] == "'" || str[pos]  =='"'
   end
 
   def build_case_statement(tokens)
@@ -438,6 +449,9 @@ class DecodeParser
     str[pos] == ')'
   end
 
+  def column_alias?(str,pos=0)
+    str[pos].downcase == 'a' && str[pos+1].downcase == 's'
+  end
 end
 
 
