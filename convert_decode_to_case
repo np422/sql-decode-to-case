@@ -155,6 +155,7 @@ class DecodeParser
 
         curbuf,outbuf = readc(curbuf,outbuf)
         @lineno += 1 if curbuf[0] == "\n"
+        
         case searchtype.current
 
         when :default
@@ -239,11 +240,16 @@ class DecodeParser
 
   def tokens_to_case(tokens)
 
-    str  = " CASE #{tokens.shift} "
+    compare = tokens.shift
+    str  = " CASE  "
 
     while tokens.count > 1
       equals , returnval = tokens.shift , tokens.shift
-      str += "WHEN #{equals} THEN #{returnval} "
+      if equals.match /\s*null\s*/i
+        str += "WHEN #{compare} IS NULL THEN #{returnval} "
+      else
+        str += "WHEN #{compare} = #{equals} THEN #{returnval} "
+      end
     end
 
     if tokens.count == 1
@@ -450,7 +456,7 @@ class DecodeParser
   end
 
   def column_alias?(str,pos=0)
-    str[pos].downcase == 'a' && str[pos+1].downcase == 's'
+    str.downcase[0..3] == ' as '
   end
 end
 
