@@ -1,4 +1,4 @@
-##sql-convert-decode-to-case
+## sql-convert-decode-to-case
 ==================
 
 Convert oracle style deocde statements to "simple form" case statements
